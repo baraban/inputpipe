@@ -1,11 +1,7 @@
 #!/bin/sh
 
-if [ -z $1 ]; then
-	HOST=kloug
-else
-	HOST=$1
-fi
+HOST=$1
 
 ssh $HOST pkill inputpipe
-ssh -f -L 7192:localhost:7192 $HOST "/home/gab/bin/inputpipe-server -a 127.0.0.1" && inputpipe-client -a localhost
+ssh -f -L 7192:localhost:7192 $HOST "inputpipe-server -d /dev/uinput 127.0.0.1" && inputpipe-client -a localhost
 
