@@ -76,7 +76,7 @@ static struct connection *connection_list_head = NULL;
 static struct connection *connection_list_tail = NULL;
 
 
-#define MAGIC_GRAB_KEY 0x8a
+static int magic_key = KEY_SYSRQ;
 static int grab_devices = 0;
 
 /* Configuration, set via the command line */
@@ -361,7 +361,7 @@ static int evdev_send_metadata(struct evdev *self, struct server *svr)
 
 static int compute_grab(struct evdev *self, struct input_event *ev)
 {
-	if (ev->type == EV_KEY && ev->code == MAGIC_GRAB_KEY && ev->value == 1) {
+	if (ev->type == EV_KEY && ev->code == magic_key && ev->value == 1) {
 		struct connection *cur;
 
 		grab_devices = !grab_devices;
@@ -396,7 +396,7 @@ static int evdev_send_event(struct evdev *self, struct server *svr)
 
   compute_grab(self, &ev);
 
-  if (grab_devices && !(ev.type == EV_KEY && ev.code == MAGIC_GRAB_KEY)) {
+  if (grab_devices && !(ev.type == EV_KEY && ev.code == magic_key)) {
 	  /* Translate and send this event. If it's an event we think should
 	   * only be sent from app to device, assume it's an echo from
 	   * a write and discard it.
@@ -905,6 +905,16 @@ static void usage(char *progname)
 int main(int argc, char **argv)
 {
   int c;
+  char *key = getenv("MAGIC_KEY");
+  if(key)
+  {
+      int k = atoi(key);
+      if((k>KEY_RESERVED)&&(k<255))
+      {
+          magic_key = k;
+          printf("use key 0x%x (%d)\n",k,k);
+      }
+  }
 
   while (1) {
     static struct option long_options[] = {
